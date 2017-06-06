@@ -21,7 +21,7 @@ import (
 	peer "github.com/libp2p/go-libp2p-peer"
 	ps "github.com/libp2p/go-libp2p-peerstore"
 	protocol "github.com/libp2p/go-libp2p-protocol"
-	"github.com/livepeer/libp2p-spike/core"
+	"github.com/livepeer/livepeer-libp2p-spike/core"
 	"github.com/livepeer/lpms"
 	ma "github.com/multiformats/go-multiaddr"
 	"github.com/nareix/joy4/av"
