@@ -15,13 +15,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ericxtang/livepeer-libp2p-spike/core"
 	"github.com/golang/glog"
 	crypto "github.com/libp2p/go-libp2p-crypto"
 	net "github.com/libp2p/go-libp2p-net"
 	peer "github.com/libp2p/go-libp2p-peer"
 	ps "github.com/libp2p/go-libp2p-peerstore"
 	protocol "github.com/libp2p/go-libp2p-protocol"
-	"github.com/livepeer/livepeer-libp2p-spike/core"
 	"github.com/livepeer/lpms"
 	ma "github.com/multiformats/go-multiaddr"
 	"github.com/nareix/joy4/av"
@@ -30,8 +30,9 @@ import (
 )
 
 var LivepeerProtocol = protocol.ID("/livepeer")
-var SeedPeerID = "QmURyyVgQBd59rtLfNrdryZ6FAhYZvCUJTpePmXmbE4ghR"
-var SeedAddr = "/ip4/127.0.0.1/tcp/10000"
+
+// var SeedPeerID = "QmURyyVgQBd59rtLfNrdryZ6FAhYZvCUJTpePmXmbE4ghR"
+// var SeedAddr = "/ip4/127.0.0.1/tcp/10000"
 
 type KeyFile struct {
 	Pub  string
@@ -233,6 +234,8 @@ func main() {
 	port := flag.Int("p", 0, "port")
 	httpPort := flag.String("http", "", "http port")
 	rtmpPort := flag.String("rtmp", "", "rtmp port")
+	seedID := flag.String("seedID", "", "Node ID for the seed node")
+	seedAddr := flag.String("seedAddr", "", "Addr for the seed node")
 	flag.Parse()
 
 	if *datadir == "" {
@@ -268,18 +271,30 @@ func main() {
 	// glog.Infof("Identity: %s", n.Identity.Pretty())
 	// glog.Infof("peer.ID: %s", peer.ID("0x1442ef0"))
 	// glog.Infof("Addrs: %v", n.Peerstore.Addrs())
-	seedID, _ := peer.IDB58Decode(SeedPeerID)
+	var sid peer.ID
+	if *seedID == "" {
+		sid = n.Identity
+	} else {
+		sid, err = peer.IDB58Decode(*seedID)
+		if err != nil {
+			glog.Fatalf("Wrong seedID: %v", err)
+		}
+	}
 
 	//Try and connect to the seed node
-	if n.Identity != seedID {
-		addr, err := ma.NewMultiaddr(SeedAddr)
+	if n.Identity != sid {
+		var saddr ma.Multiaddr
+		if *seedAddr == "" {
+			glog.Fatalf("Need to specify seedAddr")
+		}
+		saddr, err := ma.NewMultiaddr(*seedAddr)
 		if err != nil {
 			glog.Fatalf("Cannot join swarm: %v", err)
 		}
-		n.Peerstore.AddAddr(seedID, addr, ps.PermanentAddrTTL)
-		n.PeerHost.Connect(context.Background(), ps.PeerInfo{ID: seedID})
+		n.Peerstore.AddAddr(sid, saddr, ps.PermanentAddrTTL)
+		n.PeerHost.Connect(context.Background(), ps.PeerInfo{ID: sid})
 
-		n.SendJoin(seedID)
+		n.SendJoin(sid)
 	}
 
 	//TODO: Kick off a goroutine to monitor connection speed

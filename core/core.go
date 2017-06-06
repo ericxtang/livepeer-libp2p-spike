@@ -15,6 +15,8 @@ import (
 
 	// ds "github.com/ipfs/go-datastore"
 
+	bhost "github.com/ericxtang/livepeer-libp2p-spike/host/basic"
+	rhost "github.com/ericxtang/livepeer-libp2p-spike/host/routed"
 	"github.com/golang/glog"
 	ds "github.com/ipfs/go-datastore"
 	crypto "github.com/libp2p/go-libp2p-crypto"
@@ -26,8 +28,6 @@ import (
 	protocol "github.com/libp2p/go-libp2p-protocol"
 	routing "github.com/libp2p/go-libp2p-routing"
 	swarm "github.com/libp2p/go-libp2p-swarm"
-	bhost "github.com/livepeer/livepeer-libp2p-spike/host/basic"
-	rhost "github.com/livepeer/livepeer-libp2p-spike/host/routed"
 	ma "github.com/multiformats/go-multiaddr"
 	multicodec "github.com/multiformats/go-multicodec"
 	mcjson "github.com/multiformats/go-multicodec/json"

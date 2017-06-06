@@ -9,13 +9,13 @@ import (
 
 	"time"
 
+	"github.com/ericxtang/livepeer-libp2p-spike/core"
 	"github.com/golang/glog"
 	crypto "github.com/libp2p/go-libp2p-crypto"
 	net "github.com/libp2p/go-libp2p-net"
 	peer "github.com/libp2p/go-libp2p-peer"
 	ps "github.com/libp2p/go-libp2p-peerstore"
 	protocol "github.com/libp2p/go-libp2p-protocol"
-	"github.com/livepeer/livepeer-libp2p-spike/core"
 	ma "github.com/multiformats/go-multiaddr"
 )
 
