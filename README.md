@@ -11,18 +11,18 @@ Run `go get github.com/ericxtang/livepeer-libp2p-spike/cmd/livepeerd`
 ## Running the code
 To start a boot node, create a data dir, and start the node by running: 
 
-`./livepeerd -datadir={datadir} -p={tcpport} -http={httpport} -rtmp={rtmpport} -logtostderr=true`.  
+`livepeerd -datadir={datadir} -p={tcpport} -http={httpport} -rtmp={rtmpport} -logtostderr=true`.  
 
-For example - `./livepeerd -datadir=data1 -p=10000 -http=8080 -rtmp=1935 -logtostderr=true`
+For example - `livepeerd -datadir=data1 -p=10000 -http=8080 -rtmp=1935 -logtostderr=true`
 
 
 To start a peer, run 
 
-`./livepeerd -datadir={datadir} -p={tcpport} -http={httpport} -rtmp={rtmpport} -seedID={seedID} -seedAddr={seedAddr} -logtostderr=true`.
+`livepeerd -datadir={datadir} -p={tcpport} -http={httpport} -rtmp={rtmpport} -seedID={seedID} -seedAddr={seedAddr} -logtostderr=true`.
 
 The `seedID` and `seedAddr` can be found in the boot node console.  For example:
 
-`./livepeerd -datadir=data2 -p=10001 -http=8081 -rtmp=1936 -seedID=QmURyyVgQBd59rtLfNrdryZ6FAhYZvCUJTpePmXmbE4ghR -seedAddr=/ip4/127.0.0.1/tcp/10000 -logtostderr=true`
+`livepeerd -datadir=data2 -p=10001 -http=8081 -rtmp=1936 -seedID=QmURyyVgQBd59rtLfNrdryZ6FAhYZvCUJTpePmXmbE4ghR -seedAddr=/ip4/127.0.0.1/tcp/10000 -logtostderr=true`
 
 Now, start a rtmp stream by running:
 
