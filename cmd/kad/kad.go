@@ -6,7 +6,6 @@ import (
 	"flag"
 	"io/ioutil"
 	"path"
-
 	"time"
 
 	"github.com/ericxtang/livepeer-libp2p-spike/core"
@@ -117,6 +116,7 @@ func CreateNode(datadir string, port int, seedPeerID string, seedAddr string) {
 		return
 	}
 
+	Peers = append(Peers, n)
 	n.PeerHost.SetStreamHandler(LivepeerProtocol, func(s net.Stream) {
 		wrappedStream := core.WrapStream(s)
 		defer s.Close()
@@ -127,75 +127,73 @@ func CreateNode(datadir string, port int, seedPeerID string, seedAddr string) {
 	// glog.Infof("Identity: %s", n.Identity.Pretty())
 	// glog.Infof("peer.ID: %s", peer.ID("0x1442ef0"))
 	// glog.Infof("Addrs: %v", n.Peerstore.Addrs())
-	seedID, _ := peer.IDB58Decode(seedPeerID)
 
-	//Try and connect to the seed node
-	if n.Identity != seedID {
+	if seedPeerID != "" && seedAddr != "" {
+		seedID, _ := peer.IDB58Decode(seedPeerID)
 		addr, err := ma.NewMultiaddr(seedAddr)
 		if err != nil {
 			glog.Fatalf("Cannot join swarm: %v", err)
 		}
 		n.Peerstore.AddAddr(seedID, addr, ps.PermanentAddrTTL)
 		n.PeerHost.Connect(context.Background(), ps.PeerInfo{ID: seedID})
-		Peers = append(Peers, n)
 
 		n.SendJoin(seedID)
 	}
-
-	//TODO: Kick off a goroutine to monitor connection speed
-
 	glog.Infof("%v listening for connections on %v", n.Identity.Pretty(), n.PeerHost.Addrs())
 	select {} // hang forever
 }
 
+func ConnectNode(n *core.LivepeerNode, seedPeerID, seedAddr string) {
+	//Try and connect to the seed node
+}
+
 func main() {
 	// glog.Infof("Starting node...")
-	datadir := flag.String("datadir", "", "data directory")
 	port := flag.Int("p", 0, "port")
-	// mode := flag.String("mode", "", "operation mode: seed/peer")
 	flag.Parse()
 
-	if *datadir == "" {
-		glog.Fatalf("Please provide a datadir with -datadir")
-	}
 	if *port == 0 {
 		glog.Fatalf("Please provide port")
 	}
 
-	var seedPeerID = "QmURyyVgQBd59rtLfNrdryZ6FAhYZvCUJTpePmXmbE4ghR"
-	var seedAddr = "/ip4/127.0.0.1/tcp/10000"
-
+	//Initialize the Peer slice
 	Peers = make([]*core.LivepeerNode, 0, 100)
-	//Create Seed Node
-	go CreateNode(*datadir, *port, seedPeerID, seedAddr)
 
-	time.Sleep(3 * time.Second)
-	//Layer 1 peers
-	glog.Info("Creating 10 peers for seed")
+	//Create Seed Node
+	go CreateNode("", *port, "", "")
+
+	time.Sleep(1 * time.Second)
+	//Layer 1 peers, connect to the seed node
+	newSeedPid := Peers[0].Identity.Pretty()
+	newSeedAddr := Peers[0].PeerHost.Addrs()[0].String()
+	glog.Infof("\n\n\n\n\nCreating 10 peers for seed: %v @ %v", newSeedPid, newSeedAddr)
+	time.Sleep(1 * time.Second)
 	for i := 0; i < 10; i++ {
-		go CreateNode("", 10001+i, seedPeerID, seedAddr)
+		go CreateNode("", 10001+i, newSeedPid, newSeedAddr)
+		time.Sleep(500 * time.Millisecond)
 	}
 
-	//Layer 2 peers
+	//Layer 2 peers, connect to the new seed node (the last node created in the previous loop)
 	time.Sleep(5 * time.Second)
-	// Peers[0].Routing.Bootstrap(context.Background())
-
-	newSeedPid := peer.IDB58Encode(Peers[0].Identity)
-	newSeedAddr := Peers[0].PeerHost.Addrs()[0]
-	glog.Infof("Creating 10 peers new seed %v", newSeedPid)
+	newSeedPid = peer.IDB58Encode(Peers[5].Identity)
+	newSeedAddr = Peers[5].PeerHost.Addrs()[0].String()
+	glog.Infof("\n\n\n\n\nCreating 10 peers for seed: %v @ %v", newSeedPid, newSeedAddr)
+	time.Sleep(1 * time.Second)
 	for i := 0; i < 10; i++ {
 		// glog.Infof("pid: %v, addr: %v", pid, addr.String())
-		go CreateNode("", 10011+i, newSeedPid, newSeedAddr.String())
+		go CreateNode("", 10011+i, newSeedPid, newSeedAddr)
+		time.Sleep(500 * time.Millisecond)
 	}
 
-	// //Search for a peer
+	//Search for a peer
 	time.Sleep(5 * time.Second)
-	glog.Info("Do a peer search")
+	glog.Info("\n\n\n\n\nDo a peer search (between nodes NOT directly connected with each other)")
+	time.Sleep(1 * time.Second)
 	info, err := Peers[15].Routing.FindPeer(context.Background(), Peers[1].Identity)
 	if err != nil {
 		glog.Errorf("Error finding peer: %v", err)
 	}
-	glog.Infof("%v is looking for %v, found %v(%v)", Peers[15].Identity.Pretty(), Peers[1].Identity.Pretty(), info.ID.Pretty(), info)
+	glog.Infof("%v is looking for %v, found %v(%v)\n\nSuccess!!!", Peers[15].Identity.Pretty(), Peers[1].Identity.Pretty(), info.ID.Pretty(), info)
 
 	select {} // hang forever
 }
