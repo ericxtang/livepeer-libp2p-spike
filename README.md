@@ -9,20 +9,26 @@ This code allows you to stream a RTMP stream to many nodes on a peer-to-peer net
 Run `go get github.com/ericxtang/livepeer-libp2p-spike/cmd/livepeerd`
 
 ## Running the code
+
+#### Start Boot Node
+
 To start a boot node, create a data dir, and start the node by running: 
 
-`./livepeerd -datadir={datadir} -p={tcpport} -http={httpport} -rtmp={rtmpport} -logtostderr=true`.  
+`livepeerd -datadir={datadir} -p={tcpport} -http={httpport} -rtmp={rtmpport} -logtostderr=true`.  
 
-For example - `./livepeerd -datadir=data1 -p=10000 -http=8080 -rtmp=1935 -logtostderr=true`
+For example - `livepeerd -datadir=data1 -p=10000 -http=8080 -rtmp=1935 -logtostderr=true`
 
+#### Start Peer
 
 To start a peer, run 
 
-`./livepeerd -datadir={datadir} -p={tcpport} -http={httpport} -rtmp={rtmpport} -seedID={seedID} -seedAddr={seedAddr} -logtostderr=true`.
+`livepeerd -datadir={datadir} -p={tcpport} -http={httpport} -rtmp={rtmpport} -seedID={seedID} -seedAddr={seedAddr} -logtostderr=true`.
 
 The `seedID` and `seedAddr` can be found in the boot node console.  For example:
 
-`./livepeerd -datadir=data2 -p=10001 -http=8081 -rtmp=1936 -seedID=QmURyyVgQBd59rtLfNrdryZ6FAhYZvCUJTpePmXmbE4ghR -seedAddr=/ip4/127.0.0.1/tcp/10000 -logtostderr=true`
+`livepeerd -datadir=data2 -p=10001 -http=8081 -rtmp=1936 -seedID=QmURyyVgQBd59rtLfNrdryZ6FAhYZvCUJTpePmXmbE4ghR -seedAddr=/ip4/127.0.0.1/tcp/10000 -logtostderr=true`
+
+#### Create Video Stream
 
 Now, start a rtmp stream by running:
 
@@ -40,11 +46,15 @@ I0606 17:46:25.689362   44931 player.go:34] LPMS got RTMP request @ rtmp://local
 I0606 17:46:25.689454   44931 livepeerd.go:383] Got req: %!(EXTRA string=/stream/12205a83cf18c934570c1308b88860a2631fbfab4246b5dea6d0f6f03eac1561232c35146d9a3ec1c8ace2162ab68cb599e6)
 ```
 
+#### Subscribe to Stream
+
 Now you can subscribe to the stream with the new node.  To do that, copy the HLS streamID from the output, and run
 
 `curl http://localhost:{peerHttpPort}/subscribe?streamID={hlsStreamID}`
 
 Make sure the peerHttpPort is the http port you used to start the second node.  If the subscribe request is successful, you should get a `ok` as response.
+
+#### View Stream
 
 Now you can play the hls stream using ffplay - 
 
